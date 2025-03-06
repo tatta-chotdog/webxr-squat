@@ -1,0 +1,19 @@
+{
+  "name": "webxr-jump-starter",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^6.2.0"
+  },
+  "dependencies": {
+    "@vitejs/plugin-basic-ssl": "^1.2.0",
+    "three": "^0.173.0",
+    "troika-three-text": "^0.52.3"
+  }
+}
