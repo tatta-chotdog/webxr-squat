@@ -1,21 +1,34 @@
 import { Text } from "troika-three-text";
 import { SceneManager } from "./utils/SceneManager.js";
+import { ControllerManager } from "./utils/ControllerManager.js";
 
-let sceneManager, baseHeight, textMesh, xrReferenceSpace;
+let sceneManager, controllerManager;
+let baseHeight, textMesh, heightTextMesh, xrReferenceSpace;
 const jumpThreshold = 0.1;
 const crouchThreshold = -0.4;
 
 const init = () => {
   sceneManager = new SceneManager();
   sceneManager.initAR();
-  textMesh = new Text();
-  textMesh.text = "STAND UP";
-  textMesh.fontSize = 0.2;
-  textMesh.color = 0xff0000;
-  textMesh.anchorX = "center";
-  textMesh.anchorY = "middle";
-  textMesh.position.set(0, 0, -2);
+
+  textMesh = setUpText(textMesh, "STAND UP", 0);
+  heightTextMesh = setUpText(heightTextMesh, "", -0.5);
+
   sceneManager.scene.add(textMesh);
+  sceneManager.scene.add(heightTextMesh);
+
+  controllerManager = new ControllerManager(sceneManager.renderer);
+};
+
+const setUpText = (mesh, text, y) => {
+  mesh = new Text();
+  mesh.text = text;
+  mesh.fontSize = 0.2;
+  mesh.color = 0xff0000;
+  mesh.anchorX = "center";
+  mesh.anchorY = "middle";
+  mesh.position.set(0, y, -2);
+  return mesh;
 };
 
 const render = (_, xrFrame) => {
@@ -29,22 +42,29 @@ const render = (_, xrFrame) => {
       if (!baseHeight) {
         baseHeight = currentHeight;
       }
+      if (controllerManager.pressedTrigger()) {
+        updateText(heightTextMesh, 0xffff00, "RESET HEIGHT");
+        setTimeout(() => {
+          updateText(heightTextMesh, 0xff0000, "");
+        }, 1000);
+        baseHeight = currentHeight;
+      }
       if (currentHeight - baseHeight > jumpThreshold) {
-        updateText(0x00ff00, "JUMP");
+        updateText(textMesh, 0x00ff00, "JUMP");
       } else if (currentHeight - baseHeight < crouchThreshold) {
-        updateText(0x0000ff, "CROUCH");
+        updateText(textMesh, 0x0000ff, "CROUCH");
       } else {
-        updateText(0xff0000, "STAND UP");
+        updateText(textMesh, 0xff0000, "STAND UP");
       }
     }
   }
   sceneManager.renderer.render(sceneManager.scene, sceneManager.camera);
 };
 
-const updateText = (color, text) => {
-  textMesh.color = color;
-  textMesh.text = text;
-  textMesh.sync();
+const updateText = (mesh, color, text) => {
+  mesh.color = color;
+  mesh.text = text;
+  mesh.sync();
 };
 
 const animate = () => {
