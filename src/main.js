@@ -104,10 +104,13 @@ const render = (_timestamp, xrFrame) => {
           break;
         case Status.SQUATTING:
           changeStatus(audio, Status.SQUATTING, Status.FINISHED, 2);
+          updateText(textMesh, 0xff0000, `COUNT: ${count}`);
+          updateText(durationTextMesh, 0xff0000, `${duration}`);
           countSquat(viewerPose);
           break;
         case Status.FINISHED:
           changeStatus(finalPhrase, Status.FINISHED, null, 3);
+          updateText(textMesh, 0xff0000, `COUNT: ${count}`);
           break;
       }
     }
@@ -120,8 +123,6 @@ const changeStatus = (audio, currentStatus, newStatus, nextAction) => {
     audio.play();
     audioPlaying = true;
     updateAction(actions[nextAction - 1]);
-    updateText(textMesh, 0xff0000, `COUNT: ${count}`);
-    updateText(durationTextMesh, 0xff0000, `${duration}`);
   }
   if (audio.paused && audioPlaying && status === currentStatus && newStatus) {
     audioPlaying = false;
@@ -170,10 +171,14 @@ const updateText = (mesh, color, text) => {
 };
 
 const updateAction = (nextAction) => {
-  const previousAction = action;
-  action = mixer.clipAction(animations[nextAction]);
-  previousAction.fadeOut(0.5);
-  action.reset().fadeIn(0.5).play();
+  if (status === Status.READY) {
+    action = mixer.clipAction(animations[nextAction]).play();
+  } else {
+    const previousAction = action;
+    action = mixer.clipAction(animations[nextAction]);
+    previousAction.fadeOut(0.5);
+    action.reset().fadeIn(0.5).play();
+  }
 };
 
 const resetHeight = (currentHeight) => {
