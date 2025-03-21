@@ -1,5 +1,5 @@
 {
-  "name": "webxr-jump-starter",
+  "name": "webxr-squat",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,7 +9,9 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "vite": "^6.2.0"
+    "vite": "^6.2.0",
+    "vite-plugin-restart": "^0.4.1",
+    "vite-plugin-glsl": "^1.3.0"
   },
   "dependencies": {
     "@vitejs/plugin-basic-ssl": "^1.2.0",

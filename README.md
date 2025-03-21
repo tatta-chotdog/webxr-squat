@@ -1,4 +1,4 @@
-# WebXR Jump Starter
+# WebXR Squat
 
 ## How to run it on your HMD?
 

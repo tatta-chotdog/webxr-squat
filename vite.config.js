@@ -1,4 +1,6 @@
 import { defineConfig } from "vite";
+import restart from "vite-plugin-restart";
+import glsl from "vite-plugin-glsl";
 import basicSsl from "@vitejs/plugin-basic-ssl";
 
 export default defineConfig({
@@ -11,8 +13,10 @@ export default defineConfig({
     outDir: "dist",
   },
   plugins: [
+    restart({ restart: ["../public/**"] }),
+    glsl(),
     basicSsl({
-      name: "webxr-jump-starter",
+      name: "webxr-squat",
     }),
   ],
 });
