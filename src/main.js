@@ -67,6 +67,7 @@ const initModel = () => {
   gltfLoader.load(
     "/models/hmdMan.glb",
     (gltf) => {
+      // after loading the model
       init();
       model = gltf.scene;
       model.visible = false;
@@ -86,10 +87,10 @@ const initModel = () => {
       sceneManager.scene.add(model);
     },
     (_progress) => {
-      // console.log("GLBモデルの読み込み中:", _progress);
+      // console.log("loading the glb model:", _progress);
     },
     (error) => {
-      console.error("GLBモデルの読み込みに失敗しました:", error);
+      console.error("failed to load the glb model:", error);
     }
   );
 };
