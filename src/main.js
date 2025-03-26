@@ -68,12 +68,10 @@ const initModel = () => {
     "/models/hmdMan.glb",
     (gltf) => {
       init();
-
       model = gltf.scene;
       model.visible = false;
       model.scale.set(0.35, 0.35, 0.35);
       model.position.set(0, -2, -3);
-
       model.traverse((node) => {
         if (node.isMesh) {
           node.material.opacity = 1.0;
@@ -81,7 +79,6 @@ const initModel = () => {
           node.material.depthWrite = true;
         }
       });
-
       mixer = new AnimationMixer(model);
       if (gltf.animations.length > 0) {
         animations = gltf.animations;
@@ -151,36 +148,12 @@ const updateStatus = (audio, currentStatus, newStatus, nextAction) => {
 };
 
 const countSquat = (viewerPose) => {
-  const now = performance.now();
-  if (lastDurationUpdate === 0) {
-    lastDurationUpdate = now;
-  }
-  if (now - lastDurationUpdate >= 1000) {
-    second--;
-    lastDurationUpdate = now;
-
-    if (second < 6) {
-      textSize = textOriginSize;
-      updateText(secondTextMesh, TextColor.yellow, `${second}`);
-    }
-  }
-
-  if (second < 6) {
-    textSize += 0.007;
-    secondTextMesh.fontSize = textSize;
-    secondTextMesh.sync();
-  }
-
-  if (second < 0) {
-    secondTextMesh.visible = false;
-    secondTextMesh.sync();
-  }
+  updateSecond();
 
   const currentHeight = viewerPose.views[0].transform.position.y;
   if (!baseHeight) {
     baseHeight = currentHeight;
   }
-
   if (controllerManager.pressedTrigger()) {
     resetHeight(currentHeight);
   }
@@ -193,6 +166,30 @@ const countSquat = (viewerPose) => {
     count++;
     squatInProgress = false;
     updateText(textMesh, TextColor.white, `COUNT: ${count}`);
+  }
+};
+
+const updateSecond = () => {
+  const now = performance.now();
+  if (lastDurationUpdate === 0) {
+    lastDurationUpdate = now;
+  }
+  if (now - lastDurationUpdate >= 1000) {
+    second--;
+    lastDurationUpdate = now;
+    if (second < 6) {
+      textSize = textOriginSize;
+      updateText(secondTextMesh, TextColor.yellow, `${second}`);
+    }
+  }
+  if (second < 6) {
+    textSize += 0.007;
+    secondTextMesh.fontSize = textSize;
+    secondTextMesh.sync();
+  }
+  if (second < 0) {
+    secondTextMesh.visible = false;
+    secondTextMesh.sync();
   }
 };
 
