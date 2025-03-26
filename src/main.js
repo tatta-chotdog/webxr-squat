@@ -36,7 +36,7 @@ const init = () => {
   sceneManager.initAR();
 
   // Text
-  textMesh = setUpText(textMesh, "", 0.5);
+  textMesh = initText(textMesh, "", 0.5);
   sceneManager.scene.add(textMesh);
 
   // Controller
@@ -53,7 +53,7 @@ const init = () => {
 
   audio.addEventListener("loadedmetadata", () => {
     second = Math.floor(audio.duration) - 2;
-    secondTextMesh = setUpText(secondTextMesh, "", 0);
+    secondTextMesh = initText(secondTextMesh, "", 0);
     sceneManager.scene.add(secondTextMesh);
   });
 
@@ -98,7 +98,7 @@ const initModel = () => {
   );
 };
 
-const setUpText = (mesh, text, y) => {
+const initText = (mesh, text, y) => {
   mesh = new Text();
   mesh.text = text;
   mesh.fontSize = textSize;
@@ -122,15 +122,15 @@ const render = (_timestamp, xrFrame) => {
       }
       switch (status) {
         case Status.READY:
-          changeStatus(firstPhrase, Status.READY, Status.SQUATTING, 2);
+          updateStatus(firstPhrase, Status.READY, Status.SQUATTING, 2);
           break;
         case Status.SQUATTING:
-          changeStatus(audio, Status.SQUATTING, Status.FINISHED, 1);
+          updateStatus(audio, Status.SQUATTING, Status.FINISHED, 1);
           updateText(textMesh, TextColor.white, `COUNT: ${count}`);
           countSquat(viewerPose);
           break;
         case Status.FINISHED:
-          changeStatus(finalPhrase, Status.FINISHED, null, 0);
+          updateStatus(finalPhrase, Status.FINISHED, null, 0);
           updateText(secondTextMesh, TextColor.red, "");
           break;
       }
@@ -139,7 +139,7 @@ const render = (_timestamp, xrFrame) => {
   sceneManager.renderer.render(sceneManager.scene, sceneManager.camera);
 };
 
-const changeStatus = (audio, currentStatus, newStatus, nextAction) => {
+const updateStatus = (audio, currentStatus, newStatus, nextAction) => {
   if (audio && audio.paused && !audioPlaying && status === currentStatus) {
     audio.play();
     audioPlaying = true;
