@@ -124,6 +124,7 @@ const render = (_timestamp, xrFrame) => {
         case Status.SQUATTING:
           updateStatus(audio, Status.SQUATTING, Status.FINISHED, 0);
           updateText(textMesh, TextColor.white, `COUNT: ${count}`);
+          updateSecond();
           countSquat(viewerPose);
           break;
         case Status.FINISHED:
@@ -149,8 +150,6 @@ const updateStatus = (audio, currentStatus, newStatus, nextAction) => {
 };
 
 const countSquat = (viewerPose) => {
-  updateSecond();
-
   const currentHeight = viewerPose.views[0].transform.position.y;
   if (!baseHeight) {
     baseHeight = currentHeight;
