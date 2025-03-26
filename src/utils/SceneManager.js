@@ -26,21 +26,27 @@ export class SceneManager {
   }
 
   _initLights() {
-    const ambientLight = new THREE.AmbientLight(0xffffff, 8);
-    ambientLight.color.setHex(0xcccccc);
-    this.scene.add(ambientLight);
+    const frontLight = new THREE.DirectionalLight(0xffffff, 3.0);
+    frontLight.position.set(0, 1, 2);
+    frontLight.castShadow = true;
+    frontLight.shadow.radius = 3;
+    this.scene.add(frontLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 10);
-    directionalLight.position.set(-5, 10, 3);
-    directionalLight.castShadow = true;
+    const leftLight = new THREE.DirectionalLight(0xffffff, 1.8);
+    leftLight.position.set(-1.5, 1, 0);
+    this.scene.add(leftLight);
 
-    directionalLight.shadow.mapSize.width = 1024;
-    directionalLight.shadow.mapSize.height = 1024;
-    directionalLight.shadow.camera.near = 0.1;
-    directionalLight.shadow.camera.far = 20;
-    directionalLight.shadow.radius = 3;
+    const rightLight = new THREE.DirectionalLight(0xffffff, 1.8);
+    rightLight.position.set(1.5, 1, 0);
+    this.scene.add(rightLight);
 
-    this.scene.add(directionalLight);
+    const topLight = new THREE.DirectionalLight(0xffffff, 1.8);
+    topLight.position.set(0, 2, 0);
+    this.scene.add(topLight);
+
+    const backLight = new THREE.DirectionalLight(0xffffff, 1);
+    backLight.position.set(0, 1, -2);
+    this.scene.add(backLight);
   }
 
   initAR() {

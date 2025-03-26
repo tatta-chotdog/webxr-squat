@@ -1,14 +1,16 @@
 import { AnimationMixer } from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { Text } from "troika-three-text";
 import { Status } from "./constants/Status.js";
+import { TextColor } from "./constants/TextColor.js";
 import { SceneManager } from "./utils/SceneManager.js";
 import { ControllerManager } from "./utils/ControllerManager.js";
 
 let sceneManager, controllerManager;
 let baseHeight,
   textMesh,
-  durationTextMesh,
+  secondTextMesh,
   xrReferenceSpace,
   model,
   mixer,
@@ -18,11 +20,13 @@ let baseHeight,
   finalPhrase,
   animations;
 let count = 0;
-let duration = 0;
+let second = 0;
 let lastDurationUpdate = 0;
 let status = Status.READY;
 let audioPlaying = false;
 let squatInProgress = false;
+let textSize = 0.2;
+const textOriginSize = 0.2;
 const squatThreshold = -0.4;
 const actions = [2, 0, 1];
 
@@ -48,24 +52,40 @@ const init = () => {
   finalPhrase.loop = false;
 
   audio.addEventListener("loadedmetadata", () => {
-    duration = Math.floor(audio.duration);
-    durationTextMesh = setUpText(durationTextMesh, "", 0.1);
-    sceneManager.scene.add(durationTextMesh);
+    second = Math.floor(audio.duration) - 2;
+    secondTextMesh = setUpText(secondTextMesh, "", 0);
+    sceneManager.scene.add(secondTextMesh);
   });
 
-  // Model
+  animate();
+};
+
+const initModel = () => {
+  const dracoLoader = new DRACOLoader();
+  dracoLoader.setDecoderPath("/draco/");
   const gltfLoader = new GLTFLoader();
+  gltfLoader.setDRACOLoader(dracoLoader);
   gltfLoader.load(
-    "/models/squatMan.glb",
+    "/models/hmdMan.glb",
     (gltf) => {
+      init();
+
       model = gltf.scene;
       model.visible = false;
-      model.scale.set(1.3, 1.3, 1.3);
-      model.position.set(0, -1.8, -3);
+      model.scale.set(0.35, 0.35, 0.35);
+      model.position.set(0, -2, -3);
+
+      model.traverse((node) => {
+        if (node.isMesh) {
+          node.material.opacity = 1.0;
+          node.material.transparent = false;
+          node.material.depthWrite = true;
+        }
+      });
+
       mixer = new AnimationMixer(model);
       if (gltf.animations.length > 0) {
         animations = gltf.animations;
-        action = mixer.clipAction(animations[2]);
       }
       sceneManager.scene.add(model);
     },
@@ -81,9 +101,11 @@ const init = () => {
 const setUpText = (mesh, text, y) => {
   mesh = new Text();
   mesh.text = text;
-  mesh.fontSize = 0.2;
-  mesh.color = 0xff0000;
-  mesh.position.set(0.5, y, -2);
+  mesh.fontSize = textSize;
+  mesh.color = TextColor.white;
+  mesh.position.set(0, y, -2);
+  mesh.anchorX = "center";
+  mesh.anchorY = "middle";
   return mesh;
 };
 
@@ -100,17 +122,16 @@ const render = (_timestamp, xrFrame) => {
       }
       switch (status) {
         case Status.READY:
-          changeStatus(firstPhrase, Status.READY, Status.SQUATTING, 1);
+          changeStatus(firstPhrase, Status.READY, Status.SQUATTING, 2);
           break;
         case Status.SQUATTING:
-          changeStatus(audio, Status.SQUATTING, Status.FINISHED, 2);
-          updateText(textMesh, 0xff0000, `COUNT: ${count}`);
-          updateText(durationTextMesh, 0xff0000, `${duration}`);
+          changeStatus(audio, Status.SQUATTING, Status.FINISHED, 1);
+          updateText(textMesh, TextColor.white, `COUNT: ${count}`);
           countSquat(viewerPose);
           break;
         case Status.FINISHED:
-          changeStatus(finalPhrase, Status.FINISHED, null, 3);
-          updateText(textMesh, 0xff0000, `COUNT: ${count}`);
+          changeStatus(finalPhrase, Status.FINISHED, null, 0);
+          updateText(secondTextMesh, TextColor.red, "");
           break;
       }
     }
@@ -122,12 +143,11 @@ const changeStatus = (audio, currentStatus, newStatus, nextAction) => {
   if (audio && audio.paused && !audioPlaying && status === currentStatus) {
     audio.play();
     audioPlaying = true;
-    updateAction(actions[nextAction - 1]);
+    updateAction(actions[nextAction]);
   }
   if (audio.paused && audioPlaying && status === currentStatus && newStatus) {
     audioPlaying = false;
     status = newStatus;
-    updateAction(actions[nextAction]);
   }
 };
 
@@ -137,11 +157,24 @@ const countSquat = (viewerPose) => {
     lastDurationUpdate = now;
   }
   if (now - lastDurationUpdate >= 1000) {
-    if (duration > 0) {
-      duration--;
-    }
-    updateText(durationTextMesh, 0xff0000, `${duration}`);
+    second--;
     lastDurationUpdate = now;
+
+    if (second < 6) {
+      textSize = textOriginSize;
+      updateText(secondTextMesh, TextColor.yellow, `${second}`);
+    }
+  }
+
+  if (second < 6) {
+    textSize += 0.007;
+    secondTextMesh.fontSize = textSize;
+    secondTextMesh.sync();
+  }
+
+  if (second < 0) {
+    secondTextMesh.visible = false;
+    secondTextMesh.sync();
   }
 
   const currentHeight = viewerPose.views[0].transform.position.y;
@@ -156,11 +189,11 @@ const countSquat = (viewerPose) => {
   const deltaHeight = currentHeight - baseHeight;
   if (deltaHeight < squatThreshold) {
     squatInProgress = true;
-    updateText(textMesh, 0x0000ff, `COUNT: ${count}`);
+    updateText(textMesh, TextColor.red, `COUNT: ${count}`);
   } else if (squatInProgress && Math.abs(deltaHeight) < 0.05) {
     count++;
     squatInProgress = false;
-    updateText(textMesh, 0xff0000, `COUNT: ${count}`);
+    updateText(textMesh, TextColor.white, `COUNT: ${count}`);
   }
 };
 
@@ -182,9 +215,9 @@ const updateAction = (nextAction) => {
 };
 
 const resetHeight = (currentHeight) => {
-  updateText(textMesh, 0xffff00, `COUNT: ${count}`);
+  updateText(textMesh, TextColor.yellow, `COUNT: ${count}`);
   setTimeout(() => {
-    updateText(textMesh, 0xff0000, `COUNT: ${count}`);
+    updateText(textMesh, TextColor.white, `COUNT: ${count}`);
   }, 1000);
   baseHeight = currentHeight;
 };
@@ -193,5 +226,4 @@ const animate = () => {
   sceneManager.renderer.setAnimationLoop(render);
 };
 
-init();
-animate();
+initModel();
