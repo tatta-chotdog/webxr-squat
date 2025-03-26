@@ -28,7 +28,6 @@ let squatInProgress = false;
 let textSize = 0.2;
 const textOriginSize = 0.2;
 const squatThreshold = -0.4;
-const actions = [2, 0, 1];
 
 const init = () => {
   // Scene
@@ -122,15 +121,15 @@ const render = (_timestamp, xrFrame) => {
       }
       switch (status) {
         case Status.READY:
-          updateStatus(firstPhrase, Status.READY, Status.SQUATTING, 2);
+          updateStatus(firstPhrase, Status.READY, Status.SQUATTING, 1);
           break;
         case Status.SQUATTING:
-          updateStatus(audio, Status.SQUATTING, Status.FINISHED, 1);
+          updateStatus(audio, Status.SQUATTING, Status.FINISHED, 0);
           updateText(textMesh, TextColor.white, `COUNT: ${count}`);
           countSquat(viewerPose);
           break;
         case Status.FINISHED:
-          updateStatus(finalPhrase, Status.FINISHED, null, 0);
+          updateStatus(finalPhrase, Status.FINISHED, null, 2);
           updateText(secondTextMesh, TextColor.red, "");
           break;
       }
@@ -143,7 +142,7 @@ const updateStatus = (audio, currentStatus, newStatus, nextAction) => {
   if (audio && audio.paused && !audioPlaying && status === currentStatus) {
     audio.play();
     audioPlaying = true;
-    updateAction(actions[nextAction]);
+    updateAction(nextAction);
   }
   if (audio.paused && audioPlaying && status === currentStatus && newStatus) {
     audioPlaying = false;
