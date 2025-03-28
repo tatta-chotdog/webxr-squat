@@ -1,4 +1,10 @@
 # WebXR Squat
+Let's do squats together!
+
+This application calculates whether you are squatting based on the current height of your HMD.
+
+Press the trigger on the right controller to reset the neutral position.
+
 > **Note:** This experience includes background music.
 
 https://github.com/user-attachments/assets/bc1ccda9-39af-4477-93ab-2a69ff46f43b
